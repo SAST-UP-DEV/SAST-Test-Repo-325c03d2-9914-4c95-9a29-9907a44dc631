@@ -1,5 +1,7 @@
 package org.owasp.webgoat.lessons.pathtraversal;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.owasp.webgoat.container.assignments.AssignmentEndpoint;
@@ -85,7 +87,17 @@ public class ProfileUploadRetrieval extends AssignmentEndpoint {
 //            var id = request.getParameter("id");
             // comment
             // comment 2
-            (new File(request.getParameter("id"))).exists();
+              String filePath = request.getParameter("id");
+              try {
+                  filePath = Paths.get(filePath).normalize().toString();
+                  File file = new File(filePath);
+                  if (!file.getCanonicalPath().startsWith(new File(".").getCanonicalPath())) {
+                      throw new SecurityException("Invalid file path");
+                  }
+                  file.exists();
+              } catch (InvalidPathException | IOException e) {
+                  throw new SecurityException("Invalid file path", e);
+              }
 
 //            if (catPicture.getName().toLowerCase().contains("path-traversal-secret.jpg")) {
 //                return ResponseEntity.ok()
